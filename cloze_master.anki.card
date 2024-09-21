@@ -1,0 +1,73 @@
+#------------ fields
+pre; word; post; translation; audio; difficulty
+
+#------------ front
+{{pre}}
+<span id="blank"><span id="cloze" class="invisible">{{word}}</span></span>
+{{post}}
+<br/><br/>
+{{translation}}
+<hr>
+{{type:word}}
+<span id="answer" hidden>{{word}}</span>
+
+
+<script>
+  // this script is used to check correctness while typing. it seems not work on android
+  (() => {
+    const input = document.querySelector("#typeans");
+    const cloze =document.querySelector('#cloze');
+    const answer =document.querySelector('#answer');
+    if (input && cloze && answer) {
+      input.addEventListener("input", () => {
+        cloze.innerText = input.value;
+        cloze.classList.remove("invisible");
+        const match = input.value == answer.innerText.substring(0, input.value.length);
+        blank.classList.toggle("good", input.value.length != 0 && match);
+        blank.classList.toggle("bad", input.value.length != 0 && !match);
+      });
+    }
+  })();
+</script>
+
+#------------------ back
+
+{{pre}}
+<span id="blank"><span id="cloze">{{word}}</span></span>
+{{post}}
+<br/><br/>
+{{translation}}
+<hr>
+{{type:word}}
+<br/><br/>
+{{audio}}
+
+
+#---------------- css
+
+.card {
+    font-family: arial;
+    font-size: 20px;
+    text-align: center;
+    color: black;
+    background-color: white;
+}
+
+#blank {
+	  border-style:dashed;
+  	border-width:thin;
+  	width: fit-content;
+}
+#cloze{
+    min-width:20px;
+}
+.invisible {
+visibility: hidden;
+}
+
+.good {
+   color:green;
+}
+.bad {
+   color:red;
+}
