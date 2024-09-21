@@ -38,5 +38,5 @@ def download_audios(collection_dir):
 if __name__ == "__main__":
     # download_audios("english-chinese")
     # download_audios("eng-ind-fluent-fast")
-    for n in [100,500,1000,2000,3000,4000]:
-        download_audios(f"Cm-Ind-MC{n}")
+    for dirn in os.listdir("cm-en-zh"):
+        download_audios("cm-en-zh/" + dirn)
