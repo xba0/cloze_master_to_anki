@@ -1,4 +1,5 @@
 import json
+import os
 
 # copied from the exported file, the template is based on cloze_master.anki.card
 HEADER = """#separator:tab
@@ -15,7 +16,10 @@ CardTemplate = "ClozeMaster"
 
 
 def escape_text(text: str):
-    return '"' + text.replace('"', '""') + '"'
+    if text != "":
+        return '"' + text.replace('"', '""') + '"'
+    else:
+        return " "
 
 
 def split_cloze(text):
@@ -25,20 +29,24 @@ def split_cloze(text):
     return pre, blank, post
 
 
-def generate_anki_card_set(collection_path, output_path, collection_name):
+def generate_anki_card_set(collection_path, collection_name):
     with open(collection_path) as f:
         collection = json.load(f)["sents"]
-    with open(output_path, "w") as f:
-        print(HEADER, file=f)
-        for cloze in collection:
-            text, trans = cloze["text"], cloze["translation"]
-            autio = cloze["ttsAudioUrl"]
-            difficulty = cloze["difficulty"]
+    cards = []
+    for cloze in collection:
+        text, trans = cloze["text"], cloze["translation"]
+        autio = cloze["ttsAudioUrl"]
+        difficulty = cloze["difficulty"]
 
+        try:
             pre, blank, post = split_cloze(text)
-            audio = autio.rsplit("/")[-1]
+        except:
+            print("error parsing: ", text)
+            continue
+        audio = autio.rsplit("/")[-1]
 
-            print(
+        card = "\t".join(
+            [
                 CardTemplate,
                 collection_name,
                 escape_text(pre),
@@ -46,13 +54,26 @@ def generate_anki_card_set(collection_path, output_path, collection_name):
                 escape_text(post),
                 escape_text(trans),
                 "[sound:" + audio + "]",
-                difficulty,
-                sep="\t",
-                file=f,
-            )
+                str(difficulty),
+            ]
+        )
+        cards.append(card)
+    return cards
+
+
+def generate_anki_collections(out_file, cards):
+    with open(out_file, "w") as f:
+        print(HEADER, file=f)
+        for card in cards:
+            print(card, file=f)
 
 
 if __name__ == "__main__":
-    generate_anki_card_set(
-        "./Cm-Ind-MC100/all.json", "./cm_indonesian_100.txt", "collection_name"
-    )
+    cards = []
+    for dire in os.listdir("cm-en-zh"):
+        base_name = "FastTrack" if dire[0] == "F" else "MostCommon"
+        cards += generate_anki_card_set(
+            "cm-en-zh/" + dire + "/all.json",
+            "ClozeMasterChinese-English::" + base_name + "::" + dire,
+        )
+    generate_anki_collections("/mnt/c/Users/bao/Desktop/generated.txt", cards)
